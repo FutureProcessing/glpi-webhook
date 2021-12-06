@@ -1,0 +1,7 @@
+vendor/
+dist/
+.gh_token
+*.min.*
+
+# IDE files
+.idea/

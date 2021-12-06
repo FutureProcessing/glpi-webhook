@@ -1,0 +1,30 @@
+<root>
+    <name>FP Webhook</name>
+    <key>fpwebhook</key>
+    <state>stable</state>
+    <description>
+        <short>
+            <en>Fpwebhook GLPI plugin</en>
+        </short>
+        <long>
+            <en>A plugin adding webhook handling to GLPI.</en>
+        </long>
+    </description>
+    <homepage>https://github.com/FutureProcessing/glpi-webhook</homepage>
+    <download>https://github.com/FutureProcessing/glpi-webhook/releases</download>
+    <issues>https://github.com/FutureProcessing/glpi-webhook/issues</issues>
+    <readme>https://github.com/FutureProcessing/glpi-webhook/blob/master/README.md</readme>
+    <authors>
+        <author>Future Processing</author>
+    </authors>
+    <versions>
+        <version>
+            <num>1.0.0</num>
+            <compatibility>9.5</compatibility>
+        </version>
+    </versions>
+    <langs>
+        <lang>en_GB</lang>
+    </langs>
+    <license>AGPL 3.0</license>
+</root>

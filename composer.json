@@ -1,0 +1,15 @@
+{
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": "^7.4"
+  },
+  "require-dev": {
+    "glpi-project/tools": "^0.1"
+  },
+  "config": {
+    "platform": {
+      "php": "7.4"
+    }
+  }
+}
