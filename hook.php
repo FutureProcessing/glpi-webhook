@@ -57,9 +57,11 @@ function plugin_fpwebhook_install()
 {
    $webhook = new PluginFpwebhookInstaller();
 
-   if (!$webhook->isInstalled()) {
+   $schema_version = $webhook->detectSchemaVersion();
+
+   if ($schema_version === null) { // not installed
       try {
-         $webhook->initSchema();
+         $webhook->applySchema('1.0.0');
          $webhook->addViews();
          $webhook->addAccessRights();
          $webhook->registerCronTasks();
@@ -67,6 +69,12 @@ function plugin_fpwebhook_install()
          log_fpwebhook_error($e->getMessage());
          exit(1);
       }
+   }
+
+   if (version_compare($schema_version, '1.0.1') < 0) { // 1.0.1 or lower
+      // reset is necessary due to previous installation sequence causing issues
+      $webhook->removeAccessRights();
+      $webhook->addAccessRights();
    }
 
    return true;

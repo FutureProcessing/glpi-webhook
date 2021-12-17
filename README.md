@@ -24,11 +24,12 @@ Use Uninstall option in Administration/Plugins section.
 
 1. Install and enable on the plugin list
 2. Visit top menu > Plugins > Webhook subscriptions; this will open the form
-3. Enter the name (any non-empty), enter the URL to receive data (make sure it can receive and respond), select
-   TicketCreated, and check the Active box, then click Add
+3. Enter the name (any non-empty), enter the URL to receive data (make sure it can receive and respond), select the
+   desired type of the event, and click Add
 4. You will be redirected to the list with an added position
-5. Create a Ticket (a name and some description will suffice); this will pull a record in the queue
-6. During the next minute-long cron cycle, the URL will receive a packet with ID, title, and description.
+5. Trigger the event - depending on the chosen event type, this may require creating an event, solving the event, adding
+   a followup, or adding or resolving an approval
+6. During the next minute-long cron cycle, the URL will receive a packet with IDs and content.
 7. If the URL responded with a 2xx or 3xx status, the queue object will be removed; if the response was 4xx or 5xx, it
    will stay there with increased attempts count; if the reply was a `410 Gone`, the subscription will be deactivated.
 
@@ -105,6 +106,7 @@ On ticket approval request (ticket validation) added, returns:
 
 * The plugin expects the receiver to reply with a valid HTTP status
     * anything that indicates acceptance will be fine
+        * Redirect statuses do not update anything
     * 4xx and 5xx statuses will be treated as failure
     * `410 Gone` will result in an immediate deactivation of the subscription
 * To add a new event:
@@ -113,5 +115,6 @@ On ticket approval request (ticket validation) added, returns:
     * add the event type to the `glpi_plugin_fpwebhook_eventtypes` table
     * connect it to the right hook and object type in `setup.php`
     * document the new event in this file
+* There is no schema downgrade mechanism; the database does not change down
 * Due to the GLPI architecture up to the version this plugin was created for (9.5.5), it is not possible to connect more
   than one method to the same hook/itemtype combination

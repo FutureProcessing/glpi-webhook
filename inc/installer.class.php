@@ -42,6 +42,7 @@
 class PluginFpwebhookInstaller
 {
    private const DISPLAY_PREFERENCES_IDS = [2, 3, 4, 5];
+   private const PROFILES_HAVING_ACCESS = ['Super-Admin', 'Admin'];
 
    /**
     * Verifies if the plugin is already installed
@@ -61,18 +62,42 @@ class PluginFpwebhookInstaller
    }
 
    /**
+    * Detects a version for the purposes of the database upgrade
+    *
+    * NOTE: this is not a precise tool; is the upgrade had no schema nor configuration changes,
+    * it will not be detectable via this method. Do not rely on it for anything but the upgrade
+    * purposes.
+    *
+    * NOTE on expanding: add future version checks before the existing ones to reduce number of
+    * necessary checks
+    *
+    * @return string|null
+    */
+   public function detectSchemaVersion(): ?string
+   {
+      if ($this->isInstalled()) {
+         return '1.0.0';
+      }
+
+      return null;
+   }
+
+   /**
     * Initiates plugin tables
     *
+    * @param string $version Version of database to update to
     * @return void
     *
     * @throws RuntimeException in case schema installation fails
     */
-   public function initSchema(): void
+   public function applySchema(string $version): void
    {
       global $DB;
 
-      if (!$DB->runFile(PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/1.0.0-install.sql')) {
-         throw new RuntimeException('Error occurred during FP Webhook setup - unable to set up database');
+      $schemaName = PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/' . $version . '-install.sql';
+
+      if (!$DB->runFile($schemaName)) {
+         throw new RuntimeException('Error occurred during FP Webhook setup - unable to run schema for ' . $version . '.');
       }
    }
 
@@ -87,7 +112,7 @@ class PluginFpwebhookInstaller
    {
       global $DB;
 
-      if (!$DB->runFile(PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/1.0.0-uninstall.sql')) {
+      if (!$DB->runFile(PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/uninstall.sql')) {
          throw new RuntimeException('Error occurred while removing Webhook - unable to purge database');
       }
    }
@@ -135,8 +160,35 @@ class PluginFpwebhookInstaller
    public function addAccessRights(): void
    {
       ProfileRight::addProfileRights(['fpwebhooks']);
-      ProfileRight::updateProfileRights(3, ['fpwebhooks' => 31]);
-      ProfileRight::updateProfileRights(4, ['fpwebhooks' => 31]);
+
+      $profile_ids = $this->getProfileIDsByName(self::PROFILES_HAVING_ACCESS);
+
+      foreach ($profile_ids as $profile_id) {
+         ProfileRight::updateProfileRights($profile_id, ['fpwebhooks' => 31]);
+      }
+   }
+
+   /**
+    * Retrieves user profiles ID by name
+    *
+    * @param string[] $profiles Profile names
+    * @return int[] Profile IDs
+    */
+   private function getProfileIDsByName(array $profiles): array
+   {
+      global $DB;
+      $profile_objects = $DB->request([
+         'SELECT' => ['id'],
+         'FROM' => Profile::getTable(),
+         'WHERE' => ['name' => $profiles]
+      ]);
+
+      $profile_ids = [];
+      while ($profile_object = $profile_objects->next()) {
+         $profile_ids[] = $profile_object['id'];
+      }
+
+      return $profile_ids;
    }
 
    /**
