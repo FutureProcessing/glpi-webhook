@@ -36,7 +36,7 @@
    ------------------------------------------------------------------------
 */
 
-const PLUGIN_FPWEBHOOK_VERSION = '1.0.0';
+const PLUGIN_FPWEBHOOK_VERSION = '1.0.1';
 const PLUGIN_FPWEBHOOK_DIRECTORY = __DIR__;
 
 /**
