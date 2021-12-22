@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.0.1] - UNRELEASED
+## [1.0.1] - 2021-12-22
 
-Installation fix.
+Installation process fix.
 
 ### Changed
 
@@ -11,7 +11,8 @@ Installation fix.
 
 ### Fixed
 
-* Installation process now attaches the access rights in a more predictable way - a possible fix for #1
+* Installation process now attaches the access rights in a more predictable way, preventing
+  [lack of access for admin](https://github.com/FutureProcessing/glpi-webhook/issues/1).
 
 ## [1.0.0] - 2021-12-08
 
