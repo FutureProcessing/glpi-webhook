@@ -54,10 +54,10 @@ class PluginFpwebhookInstaller
       global $DB;
 
       return
-         $DB->tableExists('glpi_plugin_fpwebhook_messages', false) ||
-         $DB->tableExists('glpi_plugin_fpwebhook_contents', false) ||
-         $DB->tableExists('glpi_plugin_fpwebhook_subscriptions', false) ||
-         $DB->tableExists('glpi_plugin_fpwebhook_eventtypes', false) ||
+         $DB->tableExists('glpi_plugin_fpwebhook_messages', false) &&
+         $DB->tableExists('glpi_plugin_fpwebhook_contents', false) &&
+         $DB->tableExists('glpi_plugin_fpwebhook_subscriptions', false) &&
+         $DB->tableExists('glpi_plugin_fpwebhook_eventtypes', false) &&
          $DB->tableExists('glpi_plugin_fpwebhook_queue', false);
    }
 

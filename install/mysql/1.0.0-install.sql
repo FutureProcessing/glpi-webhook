@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_fpwebhook_subscriptions`
     `updated_at`           TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `is_active`            TINYINT UNSIGNED    NOT NULL DEFAULT 1,
     `is_deleted`           TINYINT UNSIGNED    NOT NULL DEFAULT 0,
-    `unsubscribed_at`      TIMESTAMP                    DEFAULT NULL,
+    `unsubscribed_at`      TIMESTAMP           NULL     DEFAULT NULL,
     `unsubscribed_because` TINYINT UNSIGNED             DEFAULT NULL,
     `failures`             SMALLINT UNSIGNED   NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_fpwebhook_queue` # this is non-minimal f
     `subscription_id`  BIGINT(20) UNSIGNED NOT NULL,
     `content_id`       BIGINT(20) UNSIGNED NOT NULL,
     `created_at`       TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`       TIMESTAMP                    DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `updated_at`       TIMESTAMP           NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     `response_status`  INT UNSIGNED                 DEFAULT NULL, # most recent response for debugging
     `response_content` TEXT                         DEFAULT NULL, # most recent response for debugging
     `attempts`         TINYINT UNSIGNED    NOT NULL DEFAULT 0,
