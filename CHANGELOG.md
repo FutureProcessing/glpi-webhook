@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] - 2021-12-22
+## [1.0.1] - 2022-01-12
 
 Installation process fix.
 
@@ -13,6 +13,8 @@ Installation process fix.
 
 * Installation process now attaches the access rights in a more predictable way, preventing
   [lack of access for admin](https://github.com/FutureProcessing/glpi-webhook/issues/1).
+* Installation process works now with the default MariaDB settings,
+  fixing [installation issues](https://github.com/FutureProcessing/glpi-webhook/issues/3).
 
 ## [1.0.0] - 2021-12-08
 
