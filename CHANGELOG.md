@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] - 2022-01-12
+## [1.0.1] - 2022-01-20
 
 Installation process fix.
 
