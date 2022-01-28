@@ -92,6 +92,7 @@ function plugin_version_fpwebhook()
       'requirements' => [
          'glpi' => [
             'min' => '9.5',
+            'max' => '9.6',
          ]
       ]
    ];
