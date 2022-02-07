@@ -77,6 +77,10 @@ function plugin_fpwebhook_install()
       $webhook->addAccessRights();
    }
 
+   if (version_compare($schema_version, '1.1.0') < 0) { // 1.0.0 or lower
+      $webhook->applySchema('1.1.0'); // nothing but the schema changed
+   }
+
    return true;
 }
 

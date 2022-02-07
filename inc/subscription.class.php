@@ -55,12 +55,12 @@ class PluginFpwebhookSubscription extends CommonDBTM
 
    static $rightname = 'fpwebhooks';
 
-   static function getTypeName($nb = 0)
+   static function getTypeName($nb = 0): string
    {
       return __('Webhook subscription' . ($nb !== 1 ? 's' : ''));
    }
 
-   static function getIcon()
+   static function getIcon(): string
    {
       return 'fas fa-eye';
    }
@@ -137,6 +137,12 @@ class PluginFpwebhookSubscription extends CommonDBTM
       $this->initForm($id, $options);
       $this->showFormHeader($options);
 
+      echo '<tbody>';
+
+      echo '<tr class="headerRow">';
+      echo '<td colspan="3">' . __('Settings') . '</td>';
+      echo '</tr>';
+
       echo '<tr class="tab_bg_1">';
       echo '<td>' . __('Name') . '</td>';
       echo '<td colspan="3">';
@@ -185,6 +191,37 @@ class PluginFpwebhookSubscription extends CommonDBTM
       );
       echo '</td>';
       echo '</tr>';
+
+      echo '<tr class="headerRow">';
+      echo '<th colspan="3">' . __('Filters') . '</th>';
+      echo '</tr>';
+
+      echo '<tr class="tab_bg_1">';
+      echo '<td>' . __('Filter regular expression') . '</td>';
+      echo '<td colspan="3">';
+      Html::autocompletionTextField($this, 'filtering_regex', [
+         'required' => false,
+         'attrs' => ['style' => 'width: 95%'],
+      ]);
+      echo '</td>';
+      echo '</tr>';
+
+      echo '<tr class="tab_bg_1">';
+      echo '<td>' . __('Ticket category') . '</td>';
+      echo '<td>';
+      ITILCategory::dropdown(
+         [
+            'comments' => false,
+            'name' => 'filtering_category_id',
+            'required' => false,
+            'display_emptychoice' => true,
+            'value' => $this->fields['filtering_category_id'],
+         ]
+      );
+      echo '</td>';
+      echo '</tr>';
+
+      echo '</tbody>';
 
       $this->showFormButtons($options);
 
@@ -251,6 +288,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
     * @param int $subscription_id
     *
     * @return bool
+    *
+    * @throws GlpitestSQLError
     */
    public static function addFailure(int $subscription_id): bool
    {
@@ -324,6 +363,22 @@ class PluginFpwebhookSubscription extends CommonDBTM
       }
 
       return $result;
+   }
+
+   /**
+    * @param string $categoryId
+    *
+    * @return int|null
+    */
+   public static function fixInputForFilteringCategory(string $categoryId): ?int
+   {
+      $id = (int)$categoryId;
+
+      if (empty($id)) {
+         $id = null;
+      }
+
+      return $id;
    }
 
    /**
@@ -582,7 +637,6 @@ class PluginFpwebhookSubscription extends CommonDBTM
       if (empty($content)) {
          echo '<table class="tab_cadre_fixe">';
          echo '<tr><th>' . __('Content not found') . '</th></tr>';
-         echo '</table>';
       } else {
          echo '<table class="tab_cadre_fixehov">';
 
@@ -595,9 +649,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
          echo '<td><strong>' . __('Content') . '</strong></td>';
          echo '<td>' . htmlspecialchars($content['content']) . '</td>';
          echo '</tr>';
-
-         echo '</table>';
       }
+      echo '</table>';
 
       echo '</div>';
    }
@@ -626,7 +679,6 @@ class PluginFpwebhookSubscription extends CommonDBTM
       if (empty($message)) {
          echo '<table class="tab_cadre_fixe">';
          echo '<tr><th>' . __('Message not found') . '</th></tr>';
-         echo '</table>';
       } else {
          echo '<table class="tab_cadre_fixehov">';
 
@@ -647,13 +699,49 @@ class PluginFpwebhookSubscription extends CommonDBTM
          echo '<td><strong>' . __('Response content') . '</strong></td>';
          echo '<td>' . htmlspecialchars($message['response_content']) . '</td>';
          echo '</tr>';
-
-         echo '</table>';
       }
+      echo '</table>';
 
       echo '</div>';
    }
 
+   /**
+    * Check whether the ticket passes filter set by subscription
+    *
+    * @param array $subscription
+    * @param PluginFpwebhookTicketExtracted $ticket_data
+    *
+    * @return bool
+    */
+   public static function passesFilter(
+      array $subscription,
+      PluginFpwebhookTicketExtracted $ticket_data
+   ): bool
+   {
+      $regex_matches = true;
+      $category_matches = true;
+
+      if (!empty($subscription['filtering_regex'])) { // empty string => automatic pass
+         $delimited_regex = '|' . $subscription['filtering_regex'] . '|';
+         $regex_matches = preg_match($delimited_regex, $ticket_data->getTitle());
+      }
+
+      $filtering_category_id = (int)$subscription['filtering_category_id'];
+      if (!empty($filtering_category_id)) { // unset category => automatic pass
+         $category_matches = ($filtering_category_id === $ticket_data->getCategoryId());
+      }
+
+      return $regex_matches && $category_matches;
+   }
+
+   /**
+    * Converts size in bytes to a more concise form as needed
+    *
+    * @param int $bytes
+    * @param int $precision
+    *
+    * @return string
+    */
    private static function convertSize(int $bytes, int $precision = 0): string
    {
       if ($bytes >= 1048576) {
@@ -665,5 +753,35 @@ class PluginFpwebhookSubscription extends CommonDBTM
       }
 
       return $bytes . ' B';
+   }
+
+   /**
+    * Cleans the input for the form
+    */
+   public static function cleanInput(): void
+   {
+      if (isset($_POST['is_active'])) {
+         $_POST['is_active'] = self::fixInputForCheckbox($_POST['is_active']);
+      }
+
+      if (isset($_POST['filtering_category_id'])) {
+         $_POST['filtering_category_id'] = self::fixInputForFilteringCategory(
+            $_POST['filtering_category_id']
+         );
+      }
+   }
+
+   /**
+    * Validates whether the form input is correct
+    */
+   public static function validateInput(): void
+   {
+      if (strpos($_POST['filtering_regex'], '|') !== false) {
+         $_SESSION['glpi_saved']['PluginFpwebhookSubscription'] = $_POST;
+         Session::addMessageAfterRedirect(
+            __('Unable to add - the pipe (|) character is disallowed in the regular expression')
+         );
+         Html::back();
+      }
    }
 }

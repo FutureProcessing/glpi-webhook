@@ -41,9 +41,22 @@
  */
 class PluginFpwebhookTicketCreated extends PluginFpwebhookEventBase
 {
+   protected static function getTicketData(CommonDBTM $item): PluginFpwebhookTicketExtracted
+   {
+      return new PluginFpwebhookTicketExtracted(
+         $item->fields['name'],
+         (int)$item->fields['itilcategories_id']
+      );
+   }
+
    public static function getEventType(): string
    {
       return 'TicketCreated';
+   }
+
+   protected static function getTicketId(CommonDBTM $item): int
+   {
+      return $item->fields['id'];
    }
 
    protected static function isObjectTypeCorrect($item): bool
@@ -58,7 +71,7 @@ class PluginFpwebhookTicketCreated extends PluginFpwebhookEventBase
    protected static function makeMessage(CommonDBTM $item): array
    {
       return [
-         'ticket_id' => $item->fields['id'],
+         'ticket_id' => self::getTicketId($item),
          'subject' => $item->input['name'],
          'content' => $item->input['content'],
       ];

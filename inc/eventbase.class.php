@@ -58,14 +58,21 @@ abstract class PluginFpwebhookEventBase
 
       $message = static::makeMessage($item);
 
-      $event_type_id = self::getEventTypeId();
+      $ticket_data = static::getTicketData($item);
 
-      $content_id = static::createContentRecord($event_type_id, $message);
+      $event_type_id = self::getEventTypeId();
 
       $subscriptions_iterator = static::getSubscriptionsIterator($event_type_id);
 
+      $content_id = null;
       while ($subscription = $subscriptions_iterator->next()) {
-         PluginFpwebhookQueue::queueMessage($subscription['id'], $content_id);
+         if (PluginFpwebhookSubscription::passesFilter($subscription, $ticket_data)) {
+            if (!isset($content_id)) {
+               // create content only if there is a sub calling for it; reuse if possible
+               $content_id = static::createContentRecord($event_type_id, $message);
+            }
+            PluginFpwebhookQueue::queueMessage($subscription['id'], $content_id);
+         }
       }
 
       return true;
@@ -128,6 +135,44 @@ abstract class PluginFpwebhookEventBase
          ]
       );
    }
+
+   /**
+    * Gets data of the ticket the event is linked to
+    *
+    * Override in the event if there is a simpler way to get data than a database call
+    *
+    * @param CommonDBTM $item
+    *
+    * @return PluginFpwebhookTicketExtracted
+    *
+    * @throws Exception
+    */
+   protected static function getTicketData(CommonDBTM $item): PluginFpwebhookTicketExtracted
+   {
+      global $DB;
+
+      $ticket = $DB->request([
+         'FROM' => Ticket::getTable(),
+         'WHERE' => [
+            'id' => static::getTicketId($item),
+         ],
+      ])->next();
+
+      if (empty($ticket)) {
+         throw new Exception('Ticket not found');
+      }
+
+      return new PluginFpwebhookTicketExtracted($ticket['name'], $ticket['itilcategories_id']);
+   }
+
+   /**
+    * Provides the ID of the ticket the event is linked to
+    *
+    * @param CommonDBTM $item
+    *
+    * @return int
+    */
+   abstract protected static function getTicketId(CommonDBTM $item): int;
 
    /**
     * Provide event type string
