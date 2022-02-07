@@ -75,6 +75,18 @@ class PluginFpwebhookInstaller
     */
    public function detectSchemaVersion(): ?string
    {
+      global $DB;
+
+      if (
+         $DB->tableExists('glpi_plugin_fpwebhook_subscriptions') &&
+         $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_regex') &&
+         $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_category_id')
+      ) {
+         return '1.1.0';
+      }
+
+      // version 1.0.1 does not change the schema
+
       if ($this->isInstalled()) {
          return '1.0.0';
       }
@@ -143,6 +155,7 @@ class PluginFpwebhookInstaller
     * Removes base view preferences for subscription list
     *
     * @return void
+    * @throws GlpitestSQLError
     */
    public function removeViews(): void
    {

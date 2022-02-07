@@ -6,7 +6,7 @@ This plugin creates support for webhooks for GLPI.
 
 ### Requirements
 
-GLPI 9.5.5 or above
+GLPI 9.5.*
 
 ### Installation instructions
 
@@ -55,6 +55,23 @@ This is an example based on the first implemented event,`TicketCreated`.
 7. Every 24h a cleaning is performed via a cron task
     * everything that has exceeded the failure count or belongs to inactive subscription is removed from the queue
     * Sufficiently failed subscriptions are also set to inactive.
+
+## Filtering mechanism
+
+Filtering is an optional functionality that allows to set two parameters: a ticket category and a title-matching regular
+expression. If the category is chosen, only tickets belonging to this category will trigger the event - others will be
+ignored. If the filtering regex is non-empty, only the tickets with the title matching the expression will trigger the
+event.
+
+The filters are applied together - if both filters are set, the event will trigger only if the ticket has both a
+matching title and a correct category.
+
+To remove the filtering from the subscription, simply empty the regular expression field and unset the category field.
+
+The regular expression should be entered without delimiters. Since the delimiters used are `|`, this character is
+disallowed in the regular expression.
+
+**Note:** the regular expression is applied as case-sensitive.
 
 ## Available events
 

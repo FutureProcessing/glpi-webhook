@@ -53,9 +53,8 @@ $object = new PluginFpwebhookSubscription();
 if (isset($_POST['add'])) {
    $object->check(-1, CREATE, $_POST);
 
-   if (isset($_POST['is_active'])) {
-      $_POST['is_active'] = PluginFpwebhookSubscription::fixInputForCheckbox($_POST['is_active']);
-   }
+   PluginFpwebhookSubscription::cleanInput();
+   PluginFpwebhookSubscription::validateInput();
 
    if (empty($_POST['event_type_id'])) {
       $_SESSION['glpi_saved']['PluginFpwebhookSubscription'] = $_POST;
@@ -73,7 +72,7 @@ if (isset($_POST['add'])) {
       );
       unset($_SESSION['glpi_saved']['PluginFpwebhookSubscription']);
    } else {
-      Session::addMessageAfterRedirect('Unable to add add object');
+      Session::addMessageAfterRedirect('Unable to add - unknown error');
    }
 
    $object->redirectToList();
@@ -109,9 +108,8 @@ if (isset($_POST['add'])) {
 } elseif (isset($_POST['update'])) {
    $object->check($_POST['id'], UPDATE);
 
-   if (isset($_POST['is_active'])) {
-      $_POST['is_active'] = PluginFpwebhookSubscription::fixInputForCheckbox($_POST['is_active']);
-   }
+   PluginFpwebhookSubscription::cleanInput();
+   PluginFpwebhookSubscription::validateInput();
 
    if ($object->update($_POST)) {
       Event::log(
@@ -125,13 +123,39 @@ if (isset($_POST['add'])) {
 
    $object->redirectToList();
 } else {
-   $saved_name = Session::getSavedOption('PluginFpwebhookSubscription', 'name', null);
-   $saved_url = Session::getSavedOption('PluginFpwebhookSubscription', 'url', null);
+   $saved_name = Session::getSavedOption(
+      'PluginFpwebhookSubscription',
+      'name',
+      null
+   );
+   $saved_url = Session::getSavedOption(
+      'PluginFpwebhookSubscription',
+      'url',
+      null
+   );
+   $saved_event = Session::getSavedOption(
+      'PluginFpwebhookSubscription',
+      'event_type_id',
+      null
+   );
+   $saved_regex = Session::getSavedOption(
+      'PluginFpwebhookSubscription',
+      'filtering_regex',
+      null
+   );
+   $saved_category_id = Session::getSavedOption(
+      'PluginFpwebhookSubscription',
+      'filtering_category_id',
+      null
+   );
 
    $object->display([
       'id' => $_GET['id'] ?? null,
       'name' => $saved_name,
       'url' => $saved_url,
+      'event_type_id' => $saved_event,
+      'filtering_regex' => $saved_regex,
+      'filtering_category_id' => $saved_category_id,
    ]);
 }
 

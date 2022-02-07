@@ -46,6 +46,11 @@ class PluginFpwebhookTicketFollowupAdded extends PluginFpwebhookEventBase
       return 'TicketFollowupAdded';
    }
 
+   protected static function getTicketId(CommonDBTM $item): int
+   {
+      return $item->fields['items_id'];
+   }
+
    protected static function isObjectTypeCorrect($item): bool
    {
       if ($item::getType() === ITILFollowup::getType()) {
@@ -58,7 +63,7 @@ class PluginFpwebhookTicketFollowupAdded extends PluginFpwebhookEventBase
    protected static function makeMessage(CommonDBTM $item): array
    {
       return [
-         'ticket_id' => $item->fields['items_id'],
+         'ticket_id' => self::getTicketId($item),
          'followup_id' => $item->fields['id'],
          'content' => $item->input['content'],
       ];

@@ -46,6 +46,11 @@ class PluginFpwebhookTicketSolved extends PluginFpwebhookEventBase
       return 'TicketSolved';
    }
 
+   protected static function getTicketId(CommonDBTM $item): int
+   {
+      return $item->fields['items_id'];
+   }
+
    protected static function isObjectTypeCorrect($item): bool
    {
       if ($item::getType() === ITILSolution::getType()) {
@@ -58,7 +63,7 @@ class PluginFpwebhookTicketSolved extends PluginFpwebhookEventBase
    protected static function makeMessage(CommonDBTM $item): array
    {
       return [
-         'ticket_id' => $item->fields['items_id'],
+         'ticket_id' => self::getTicketId($item),
          'solution_id' => $item->fields['id'],
          'content' => $item->input['content'],
          'status' => Ticket::getStatus($item->input['status']),

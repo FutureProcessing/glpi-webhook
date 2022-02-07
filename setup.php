@@ -36,7 +36,7 @@
    ------------------------------------------------------------------------
 */
 
-const PLUGIN_FPWEBHOOK_VERSION = '1.0.1';
+const PLUGIN_FPWEBHOOK_VERSION = '1.1.0';
 const PLUGIN_FPWEBHOOK_DIRECTORY = __DIR__;
 
 /**
@@ -87,7 +87,7 @@ function plugin_version_fpwebhook()
       'name' => 'FP Webhook',
       'version' => PLUGIN_FPWEBHOOK_VERSION,
       'author' => '<a href="https://www.future-processing.com">Future Processing</a>',
-      'license' => 'AGPL 3.0',
+      'license' => 'AGPLv3+',
       'homepage' => 'https://www.future-processing.com',
       'requirements' => [
          'glpi' => [

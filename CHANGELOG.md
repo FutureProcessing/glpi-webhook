@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0] - 2022-02-07
+
+Ticket filtering added.
+
+### Added
+
+* Events can now be set to trigger only for specific category of tickets
+* Events can now be set to trigger only for tickets with a title matching a regular expression
+
 ## [1.0.1] - 2022-01-20
 
 Installation process fix.
