@@ -41,10 +41,10 @@
  */
 class PluginFpwebhookContent extends CommonDBChild
 {
-   static $rightname = 'fpwebhooks';
+    public static $rightname = 'fpwebhooks';
 
-   static function getTypeName($nb = 0)
-   {
-      return __('Triggered message' . ($nb !== 1 ? 's' : ''));
-   }
+    public static function getTypeName($nb = 0)
+    {
+        return __('Triggered message' . ($nb !== 1 ? 's' : ''));
+    }
 }

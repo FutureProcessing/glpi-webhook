@@ -21,7 +21,7 @@
    GNU Affero General Public License for more details.
 
    You should have received a copy of the GNU Affero General Public License
-   along with FPWebhook. If not, see <http://www.gnu.org/licenses/>.
+   along with the FPWebhook source code. If not, see <http://www.gnu.org/licenses/>.
 
    ------------------------------------------------------------------------
 
@@ -36,36 +36,29 @@
    ------------------------------------------------------------------------
 */
 
-/**
- * TicketFollowupAdded event handler
- */
-class PluginFpwebhookTicketFollowupAdded extends PluginFpwebhookEventBase
-{
-    public static function getEventType(): string
-    {
-        return 'TicketFollowupAdded';
-    }
+include('../../../inc/includes.php');
 
-    protected static function getTicketId(CommonDBTM $item): int
-    {
-        return $item->fields['items_id'];
-    }
+Session::checkRight('config', UPDATE);
 
-    protected static function isObjectTypeCorrect($item): bool
-    {
-        if ($item::getType() === ITILFollowup::getType()) {
-            return true;
-        }
+$config = new PluginFpwebhookConfig();
 
-        return false;
-    }
-
-    protected static function makeMessage(CommonDBTM $item): array
-    {
-        return [
-            'ticket_id' => self::getTicketId($item),
-            'followup_id' => $item->fields['id'],
-            'content' => $item->input['content'],
-        ];
-    }
+if (isset($_POST['update'])) {
+    Config::setConfigurationValues(PluginFpwebhookConfig::$context, [
+        'max_messages_per_tick' =>
+            $_POST['max_messages_per_tick']
+            ?? PluginFpwebhookConfig::$default_max_messages_per_tick,
+        'max_attempts_per_message' =>
+            $_POST['max_attempts_per_message']
+            ?? PluginFpwebhookConfig::$default_max_attempts_per_message,
+        'max_allowed_failures' =>
+            $_POST['max_allowed_failures']
+            ?? PluginFpwebhookConfig::$default_max_allowed_failures,
+    ]);
+    HTML::back();
 }
+
+HTML::header('Configuration of FP Webhook plugin');
+
+$config->showFormDisplay();
+
+HTML::footer();

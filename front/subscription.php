@@ -42,13 +42,13 @@ Session::checkRight('fpwebhooks', READ);
 
 $plugin = new Plugin();
 if (!$plugin->isInstalled('fpwebhook') || !$plugin->isActivated('fpwebhook')) {
-   Html::displayNotFoundError();
+    Html::displayNotFoundError();
 }
 
 if (PluginFpwebhookSubscription::canView()) {
-   PluginFpwebhookSubscription::makeHeader();
-   Search::show(PluginFpwebhookSubscription::class);
-   Html::footer();
+    PluginFpwebhookSubscription::makeHeader();
+    Search::show(PluginFpwebhookSubscription::class);
+    Html::footer();
 } else {
-   Html::displayRightError();
+    Html::displayRightError();
 }

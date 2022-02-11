@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.0] - UNRELEASED
+
+Ensured compatibility with GLPI 10.0.x
+
+### Added
+
+* Display of the automatic unsubscription reasons in the subscription detail page
+
+### Changed
+
+* Solutions deprecated or removed in GLPI 10.0 have been upgraded
+
+### Fixed
+
+* Category filter is now removed correctly at all times
+* Unsubscription reason are no longer overwritten during queue cleaning
+
 ## [1.1.0] - 2022-02-07
 
 Ticket filtering added.

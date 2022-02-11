@@ -41,161 +41,163 @@
  */
 abstract class PluginFpwebhookEventBase
 {
-   /**
-    * Trigger handler
-    *
-    * @param CommonDBTM $item
-    *
-    * @return boolean
-    *
-    * @throws Exception
-    */
-   public static function eventHandler(CommonDBTM $item): bool
-   {
-      if (!static::isObjectTypeCorrect($item)) {
-         return true;
-      }
+    /**
+     * Trigger handler
+     *
+     * @param CommonDBTM $item
+     *
+     * @return boolean
+     *
+     * @throws Exception
+     */
+    public static function eventHandler(CommonDBTM $item): bool
+    {
+        if (!static::isObjectTypeCorrect($item)) {
+            return true;
+        }
 
-      $message = static::makeMessage($item);
+        $message = static::makeMessage($item);
 
-      $ticket_data = static::getTicketData($item);
+        $ticket_data = static::getTicketData($item);
 
-      $event_type_id = self::getEventTypeId();
+        $event_type_id = self::getEventTypeId();
 
-      $subscriptions_iterator = static::getSubscriptionsIterator($event_type_id);
+        $subscriptions_iterator = static::getSubscriptionsIterator($event_type_id);
 
-      $content_id = null;
-      while ($subscription = $subscriptions_iterator->next()) {
-         if (PluginFpwebhookSubscription::passesFilter($subscription, $ticket_data)) {
-            if (!isset($content_id)) {
-               // create content only if there is a sub calling for it; reuse if possible
-               $content_id = static::createContentRecord($event_type_id, $message);
+        $content_id = null;
+        foreach ($subscriptions_iterator as $subscription) {
+            if (PluginFpwebhookSubscription::passesFilter($subscription, $ticket_data)) {
+                if (!isset($content_id)) {
+                    // create content only if there is a sub calling for it; reuse if possible
+                    $content_id = static::createContentRecord($event_type_id, $message);
+                }
+                PluginFpwebhookQueue::queueMessage($subscription['id'], $content_id);
             }
-            PluginFpwebhookQueue::queueMessage($subscription['id'], $content_id);
-         }
-      }
+        }
 
-      return true;
-   }
+        return true;
+    }
 
-   /**
-    * Provide event type ID
-    *
-    * @return int
-    *
-    * @throws Exception
-    */
-   protected static function getEventTypeId(): int
-   {
-      return PluginFpwebhookEventType::getEventTypeIdByName(static::getEventType());
-   }
+    /**
+     * Provide event type ID
+     *
+     * @return int
+     *
+     * @throws Exception
+     */
+    protected static function getEventTypeId(): int
+    {
+        return PluginFpwebhookEventType::getEventTypeIdByName(static::getEventType());
+    }
 
-   /**
-    * Create the record with the message for future sending
-    *
-    * @param int $event_type_id
-    * @param array $content
-    *
-    * @return int
-    */
-   protected static function createContentRecord(int $event_type_id, array $content): int
-   {
-      global $DB;
-      $DB->insert(
-         PluginFpwebhookContent::getTable(),
-         [
-            'event_type_id' => $event_type_id,
-            'content' => $DB->escape(json_encode($content)),
-         ]
-      );
+    /**
+     * Create the record with the message for future sending
+     *
+     * @param int $event_type_id
+     * @param array $content
+     *
+     * @return int
+     */
+    protected static function createContentRecord(int $event_type_id, array $content): int
+    {
+        global $DB;
+        $DB->insert(
+            PluginFpwebhookContent::getTable(),
+            [
+                'event_type_id' => $event_type_id,
+                'content' => $DB->escape(json_encode($content)),
+            ]
+        );
 
-      return $DB->insertId();
-   }
+        return $DB->insertId();
+    }
 
-   /**
-    * Get all active subscriptions
-    *
-    * @param int $event_type_id
-    *
-    * @return DBmysqlIterator
-    */
-   protected static function getSubscriptionsIterator(int $event_type_id): DBmysqlIterator
-   {
-      global $DB;
+    /**
+     * Get all active subscriptions
+     *
+     * @param int $event_type_id
+     *
+     * @return DBmysqlIterator
+     */
+    protected static function getSubscriptionsIterator(int $event_type_id): DBmysqlIterator
+    {
+        global $DB;
 
-      return $DB->request(
-         [
-            'FROM' => PluginFpwebhookSubscription::getTable(),
+        return $DB->request(
+            [
+                'FROM' => PluginFpwebhookSubscription::getTable(),
+                'WHERE' => [
+                    'event_type_id' => $event_type_id,
+                    'is_active' => 1,
+                    'is_deleted' => 0,
+                ],
+            ]
+        );
+    }
+
+    /**
+     * Gets data of the ticket the event is linked to
+     *
+     * Override in the event if there is a simpler way to get data than a database call
+     *
+     * @param CommonDBTM $item
+     *
+     * @return PluginFpwebhookTicketExtracted
+     *
+     * @throws Exception
+     */
+    protected static function getTicketData(CommonDBTM $item): PluginFpwebhookTicketExtracted
+    {
+        global $DB;
+
+        $iterator = $DB->request([
+            'FROM' => Ticket::getTable(),
             'WHERE' => [
-               'event_type_id' => $event_type_id,
-               'is_active' => 1,
-               'is_deleted' => 0,
-               'unsubscribed_at' => null,
+                'id' => static::getTicketId($item),
             ],
-         ]
-      );
-   }
+        ]);
 
-   /**
-    * Gets data of the ticket the event is linked to
-    *
-    * Override in the event if there is a simpler way to get data than a database call
-    *
-    * @param CommonDBTM $item
-    *
-    * @return PluginFpwebhookTicketExtracted
-    *
-    * @throws Exception
-    */
-   protected static function getTicketData(CommonDBTM $item): PluginFpwebhookTicketExtracted
-   {
-      global $DB;
+        $iterator->rewind();
+        $ticket = $iterator->current();
 
-      $ticket = $DB->request([
-         'FROM' => Ticket::getTable(),
-         'WHERE' => [
-            'id' => static::getTicketId($item),
-         ],
-      ])->next();
+        if (empty($ticket)) {
+            throw new Exception('Ticket not found');
+        }
 
-      if (empty($ticket)) {
-         throw new Exception('Ticket not found');
-      }
+        return new PluginFpwebhookTicketExtracted($ticket['name'], $ticket['itilcategories_id']);
+    }
 
-      return new PluginFpwebhookTicketExtracted($ticket['name'], $ticket['itilcategories_id']);
-   }
+    /**
+     * Provides the ID of the ticket the event is linked to
+     *
+     * @param CommonDBTM $item
+     *
+     * @return int
+     */
+    abstract protected static function getTicketId(CommonDBTM $item): int;
 
-   /**
-    * Provides the ID of the ticket the event is linked to
-    *
-    * @param CommonDBTM $item
-    *
-    * @return int
-    */
-   abstract protected static function getTicketId(CommonDBTM $item): int;
+    /**
+     * Provide event type string
+     *
+     * @return string
+     */
+    abstract public static function getEventType(): string;
 
-   /**
-    * Provide event type string
-    *
-    * @return string
-    */
-   abstract public static function getEventType(): string;
+    /**
+     * Is this the right object to trigger a reaction?
+     *
+     * @param $item
+     *
+     * @return bool
+     */
+    abstract protected static function isObjectTypeCorrect($item): bool;
 
-   /**
-    * Is this the right object to trigger a reaction?
-    *
-    * @param $item
-    *
-    * @return bool
-    */
-   abstract protected static function isObjectTypeCorrect($item): bool;
-
-   /**
-    * Prepares message array
-    *
-    * @param CommonDBTM $item
-    *
-    * @return array
-    */
-   abstract protected static function makeMessage(CommonDBTM $item): array;
+    /**
+     * Prepares message array
+     *
+     * @param CommonDBTM $item
+     *
+     * @return array
+     */
+    abstract protected static function makeMessage(CommonDBTM $item): array;
 }

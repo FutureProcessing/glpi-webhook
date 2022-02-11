@@ -40,13 +40,11 @@
  * Sends log message.
  * @param string $message
  * @return void
- *
- * @todo Verify
  */
 function log_fpwebhook_error(string $message): void
 {
-   $migration = new Migration(PLUGIN_FPWEBHOOK_VERSION);
-   $migration->displayMessage($message);
+    $migration = new Migration(PLUGIN_FPWEBHOOK_VERSION);
+    $migration->displayMessage($message);
 }
 
 /**
@@ -55,33 +53,37 @@ function log_fpwebhook_error(string $message): void
  */
 function plugin_fpwebhook_install()
 {
-   $webhook = new PluginFpwebhookInstaller();
+    $webhook = new PluginFpwebhookInstaller();
 
-   $schema_version = $webhook->detectSchemaVersion();
+    $schema_version = $webhook->detectSchemaVersion();
 
-   if ($schema_version === null) { // not installed
-      try {
-         $webhook->applySchema('1.0.0');
-         $webhook->addViews();
-         $webhook->addAccessRights();
-         $webhook->registerCronTasks();
-      } catch (Throwable $e) {
-         log_fpwebhook_error($e->getMessage());
-         exit(1);
-      }
-   }
+    if ($schema_version === null) { // not installed at all
+        try {
+            $webhook->applySchema('1.0.0');
+            $webhook->addViews();
+            $webhook->addAccessRights();
+            $webhook->registerCronTasks();
+        } catch (Throwable $e) {
+            log_fpwebhook_error($e->getMessage());
+            exit(1);
+        }
+    }
 
-   if (version_compare($schema_version, '1.0.1') < 0) { // 1.0.1 or lower
-      // reset is necessary due to previous installation sequence causing issues
-      $webhook->removeAccessRights();
-      $webhook->addAccessRights();
-   }
+    if (version_compare($schema_version, '1.0.1') < 0) { // 1.0.0
+        // reset is necessary due to previous installation sequence causing issues
+        $webhook->removeAccessRights();
+        $webhook->addAccessRights();
+    }
 
-   if (version_compare($schema_version, '1.1.0') < 0) { // 1.0.0 or lower
-      $webhook->applySchema('1.1.0'); // nothing but the schema changed
-   }
+    if (version_compare($schema_version, '1.1.0') < 0) { // 1.0.1 or lower
+        $webhook->applySchema('1.1.0'); // nothing but the schema changed
+    }
 
-   return true;
+    if (version_compare($schema_version, '2.0.0') < 0) { // 1.1.0 or lower
+        $webhook->applySchema('2.0.0'); // nothing but the schema changed
+    }
+
+    return true;
 }
 
 /**
@@ -90,19 +92,19 @@ function plugin_fpwebhook_install()
  */
 function plugin_fpwebhook_uninstall()
 {
-   $webhook = new PluginFpwebhookInstaller();
+    $webhook = new PluginFpwebhookInstaller();
 
-   if ($webhook->isInstalled()) {
-      try {
-         $webhook->unregisterCronTasks();
-         $webhook->removeAccessRights();
-         $webhook->removeViews();
-         $webhook->purgeSchema();
-      } catch (Throwable $e) {
-         log_fpwebhook_error($e->getMessage());
-         exit(1);
-      }
-   }
+    if ($webhook->isInstalled()) {
+        try {
+            $webhook->unregisterCronTasks();
+            $webhook->removeAccessRights();
+            $webhook->removeViews();
+            $webhook->purgeSchema();
+        } catch (Throwable $e) {
+            log_fpwebhook_error($e->getMessage());
+            exit(1);
+        }
+    }
 
-   return true;
+    return true;
 }

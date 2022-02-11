@@ -36,7 +36,7 @@
    ------------------------------------------------------------------------
 */
 
-const PLUGIN_FPWEBHOOK_VERSION = '1.1.0';
+const PLUGIN_FPWEBHOOK_VERSION = '2.0.0';
 const PLUGIN_FPWEBHOOK_DIRECTORY = __DIR__;
 
 /**
@@ -47,32 +47,32 @@ const PLUGIN_FPWEBHOOK_DIRECTORY = __DIR__;
  */
 function plugin_init_fpwebhook()
 {
-   Plugin::registerClass(PluginFpwebhookConfig::class, ['addtabon' => ['Config']]);
+    Plugin::registerClass(PluginFpwebhookConfig::class, ['addtabon' => ['Config']]);
 
-   global $PLUGIN_HOOKS;
+    global $PLUGIN_HOOKS;
 
-   $PLUGIN_HOOKS['csrf_compliant']['fpwebhook'] = true;
+    $PLUGIN_HOOKS['csrf_compliant']['fpwebhook'] = true;
 
-   $PLUGIN_HOOKS['helpdesk_menu_entry']['fpwebhook'] = true;
+    $PLUGIN_HOOKS['helpdesk_menu_entry']['fpwebhook'] = true;
 
-   $PLUGIN_HOOKS['menu_toadd']['fpwebhook'] = [
-      'plugins' => ['Webhooks' => PluginFpwebhookSubscription::class],
-   ];
+    $PLUGIN_HOOKS['menu_toadd']['fpwebhook'] = [
+        'plugins' => ['Webhooks' => PluginFpwebhookSubscription::class],
+    ];
 
-   $PLUGIN_HOOKS['item_add']['fpwebhook'] = [
-      'Ticket' => [PluginFpwebhookTicketCreated::class, 'eventHandler'],
-      'ITILFollowup' => [PluginFpwebhookTicketFollowupAdded::class, 'eventHandler'],
-      'ITILSolution' => [PluginFpwebhookTicketSolved::class, 'eventHandler'],
-      'TicketValidation' => [PluginFpwebhookTicketApprovalAdded::class, 'eventHandler'],
-   ];
+    $PLUGIN_HOOKS['item_add']['fpwebhook'] = [
+        'Ticket' => [PluginFpwebhookTicketCreated::class, 'eventHandler'],
+        'ITILFollowup' => [PluginFpwebhookTicketFollowupAdded::class, 'eventHandler'],
+        'ITILSolution' => [PluginFpwebhookTicketSolved::class, 'eventHandler'],
+        'TicketValidation' => [PluginFpwebhookTicketApprovalAdded::class, 'eventHandler'],
+    ];
 
-   $PLUGIN_HOOKS['item_update']['fpwebhook'] = [
-      'TicketValidation' => [PluginFpwebhookTicketApprovalResolved::class, 'eventHandler'],
-   ];
+    $PLUGIN_HOOKS['item_update']['fpwebhook'] = [
+        'TicketValidation' => [PluginFpwebhookTicketApprovalResolved::class, 'eventHandler'],
+    ];
 
-   if (Session::haveRight('config', UPDATE)) {
-      $PLUGIN_HOOKS['config_page']['fpwebhook'] = 'config.php';
-   }
+    if (Session::haveRight('config', UPDATE)) {
+        $PLUGIN_HOOKS['config_page']['fpwebhook'] = 'front/config.form.php';
+    }
 }
 
 /**
@@ -83,19 +83,19 @@ function plugin_init_fpwebhook()
  */
 function plugin_version_fpwebhook()
 {
-   return [
-      'name' => 'FP Webhook',
-      'version' => PLUGIN_FPWEBHOOK_VERSION,
-      'author' => '<a href="https://www.future-processing.com">Future Processing</a>',
-      'license' => 'AGPLv3+',
-      'homepage' => 'https://www.future-processing.com',
-      'requirements' => [
-         'glpi' => [
-            'min' => '9.5',
-            'max' => '9.6',
-         ]
-      ]
-   ];
+    return [
+        'name' => 'FP Webhook',
+        'version' => PLUGIN_FPWEBHOOK_VERSION,
+        'author' => '<a href="https://www.future-processing.com">Future Processing</a>',
+        'license' => 'AGPLv3+',
+        'homepage' => 'https://www.future-processing.com',
+        'requirements' => [
+            'glpi' => [
+                'min' => '9.5',
+                'max' => '10.1',
+            ]
+        ]
+    ];
 }
 
 /**
@@ -106,26 +106,17 @@ function plugin_version_fpwebhook()
  */
 function plugin_webhook_check_prerequisites(): bool
 {
-   if (
-      version_compare(GLPI_VERSION, '9.5', 'lt') ||
-      version_compare(GLPI_VERSION, '9.6', 'ge')
-   ) {
-      if (method_exists('Plugin', 'messageIncompatible')) {
-         echo Plugin::messageIncompatible('core', '9.5');
-      }
-      return false;
-   }
-   return true;
+    return true; // Unnecessary for the moment, versions are checked by GLPI
 }
 
 /**
  * Check configuration
  *
- * @param boolean $verbose Whether to display message on failure. Defaults to false
+ * @param bool $verbose Whether to display message on failure. Defaults to false
  *
- * @return boolean
+ * @return bool
  */
 function plugin_fpwebhook_check_config($verbose = false): bool
 {
-   return true; // The configuration has defaults, there is no need to force a check
+    return true; // The configuration has defaults, there is no need to force a check
 }

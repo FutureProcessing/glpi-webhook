@@ -41,32 +41,33 @@
  */
 class PluginFpwebhookEventType extends CommonDropdown
 {
-   /**
-    * Provide event type ID
-    *
-    * @param $name
-    *
-    * @return int
-    *
-    * @throws Exception
-    */
-   public static function getEventTypeIdByName($name): int
-   {
-      global $DB;
+    /**
+     * Provide event type ID
+     *
+     * @param $name
+     *
+     * @return int
+     *
+     * @throws Exception
+     */
+    public static function getEventTypeIdByName($name): int
+    {
+        global $DB;
 
-      $eventIterator = $DB->request(
-         [
-            'FROM' => self::getTable(),
-            'WHERE' => ['name' => $name]
-         ]
-      );
+        $eventIterator = $DB->request(
+            [
+                'FROM' => self::getTable(),
+                'WHERE' => ['name' => $name]
+            ]
+        );
 
-      $eventType = $eventIterator->next();
+        $eventIterator->rewind();
+        $eventType = $eventIterator->current();
 
-      if (empty($eventType)) {
-         throw new Exception('Event type not found');
-      }
+        if (empty($eventType)) {
+            throw new Exception('Event type not found');
+        }
 
-      return $eventType['id'];
-   }
+        return $eventType['id'];
+    }
 }
