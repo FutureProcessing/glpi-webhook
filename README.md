@@ -6,7 +6,7 @@ This plugin creates support for webhooks for GLPI.
 
 ### Requirements
 
-GLPI 9.5.*
+GLPI 9.5.* or GLPI 10.0.x
 
 ### Installation instructions
 

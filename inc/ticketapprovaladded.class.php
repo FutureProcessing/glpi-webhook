@@ -41,32 +41,32 @@
  */
 class PluginFpwebhookTicketApprovalAdded extends PluginFpwebhookEventBase
 {
-   public static function getEventType(): string
-   {
-      return 'TicketApprovalAdded';
-   }
+    public static function getEventType(): string
+    {
+        return 'TicketApprovalAdded';
+    }
 
-   protected static function getTicketId(CommonDBTM $item): int
-   {
-      return $item->fields['tickets_id'];
-   }
+    protected static function getTicketId(CommonDBTM $item): int
+    {
+        return $item->fields['tickets_id'];
+    }
 
-   protected static function isObjectTypeCorrect($item): bool
-   {
-      if ($item::getType() === TicketValidation::getType()) {
-         return true;
-      }
+    protected static function isObjectTypeCorrect($item): bool
+    {
+        if ($item::getType() === TicketValidation::getType()) {
+            return true;
+        }
 
-      return false;
-   }
+        return false;
+    }
 
-   protected static function makeMessage(CommonDBTM $item): array
-   {
-      return [
-         'approval_id' => $item->fields['id'],
-         'ticket_id' => self::getTicketId($item),
-         'user_id' => $item->fields['users_id'],
-         'content' => $item->input['comment_submission'],
-      ];
-   }
+    protected static function makeMessage(CommonDBTM $item): array
+    {
+        return [
+            'approval_id' => $item->fields['id'],
+            'ticket_id' => self::getTicketId($item),
+            'user_id' => $item->fields['users_id'],
+            'content' => $item->input['comment_submission'],
+        ];
+    }
 }

@@ -44,119 +44,120 @@ Session::checkRight('fpwebhooks', READ);
 
 $plugin = new Plugin();
 if (!$plugin->isInstalled('fpwebhook') || !$plugin->isActivated('fpwebhook')) {
-   Html::displayNotFoundError();
+    Html::displayNotFoundError();
 }
 
 PluginFpwebhookSubscription::makeHeader();
 
 $object = new PluginFpwebhookSubscription();
 if (isset($_POST['add'])) {
-   $object->check(-1, CREATE, $_POST);
+    $object->check(-1, CREATE, $_POST);
 
-   PluginFpwebhookSubscription::cleanInput();
-   PluginFpwebhookSubscription::validateInput();
+    PluginFpwebhookSubscription::cleanInput();
+    PluginFpwebhookSubscription::validateInput();
 
-   if (empty($_POST['event_type_id'])) {
-      $_SESSION['glpi_saved']['PluginFpwebhookSubscription'] = $_POST;
-      Session::addMessageAfterRedirect(__('Unable to add - please choose event type'));
-      Html::back();
-   }
+    if (empty($_POST['event_type_id'])) {
+        $_SESSION['glpi_saved']['PluginFpwebhookSubscription'] = $_POST;
+        Session::addMessageAfterRedirect(__('Unable to add - please choose event type'));
+        Html::back();
+    }
 
-   if ($newID = $object->add($_POST)) {
-      Event::log(
-         $newID,
-         'webhooks',
-         4,
-         'plugins',
-         sprintf(__('%1$s added the subscription %2$s'), $_SESSION['glpiname'], $_POST['name'])
-      );
-      unset($_SESSION['glpi_saved']['PluginFpwebhookSubscription']);
-   } else {
-      Session::addMessageAfterRedirect('Unable to add - unknown error');
-   }
+    if ($newID = $object->add($_POST)) {
+        Event::log(
+            $newID,
+            'webhooks',
+            4,
+            'plugins',
+            sprintf(__('%1$s added the subscription %2$s'), $_SESSION['glpiname'], $_POST['name'])
+        );
+        unset($_SESSION['glpi_saved']['PluginFpwebhookSubscription']);
+    } else {
+        Session::addMessageAfterRedirect('Unable to add - unknown error');
+    }
 
-   $object->redirectToList();
+    $object->redirectToList();
 } elseif (isset($_POST['delete'])) {
-   $object->check($_POST['id'], DELETE);
+    $object->check($_POST['id'], DELETE);
 
-   if ($object->delete($_POST)) {
-      Event::log(
-         $_POST['id'],
-         'webhooks',
-         4,
-         'plugins',
-         sprintf(__('%s deletes a subscription'), $_SESSION['glpiname'])
-      );
-      $object->redirectToList();
-   }
+    if ($object->delete($_POST)) {
+        Event::log(
+            $_POST['id'],
+            'webhooks',
+            4,
+            'plugins',
+            sprintf(__('%s deletes a subscription'), $_SESSION['glpiname'])
+        );
+        $object->redirectToList();
+    }
 
-   $object->redirectToList();
+    $object->redirectToList();
 } elseif (isset($_POST['restore'])) {
-   $object->check($_POST['id'], DELETE);
+    $object->check($_POST['id'], DELETE);
 
-   if ($object->restore($_POST)) {
-      Event::log(
-         $_POST['id'],
-         'webhooks',
-         4,
-         'plugins',
-         sprintf(__('%s restores a subscription'), $_SESSION['glpiname'])
-      );
-   }
+    if ($object->restore($_POST)) {
+        Event::log(
+            $_POST['id'],
+            'webhooks',
+            4,
+            'plugins',
+            sprintf(__('%s restores a subscription'), $_SESSION['glpiname'])
+        );
+    }
 
-   $object->redirectToList();
+    $object->redirectToList();
 } elseif (isset($_POST['update'])) {
-   $object->check($_POST['id'], UPDATE);
+    $object->check($_POST['id'], UPDATE);
 
-   PluginFpwebhookSubscription::cleanInput();
-   PluginFpwebhookSubscription::validateInput();
+    PluginFpwebhookSubscription::cleanInput();
+    PluginFpwebhookSubscription::validateInput();
+    PluginFpwebhookSubscription::resetUnsubscriptionData();
 
-   if ($object->update($_POST)) {
-      Event::log(
-         $_POST['id'],
-         'webhooks',
-         4,
-         'plugins',
-         sprintf(__('%s updates a subscription'), $_SESSION['glpiname'])
-      );
-   }
+    if ($object->update($_POST)) {
+        Event::log(
+            $_POST['id'],
+            'webhooks',
+            4,
+            'plugins',
+            sprintf(__('%s updates a subscription'), $_SESSION['glpiname'])
+        );
+    }
 
-   $object->redirectToList();
+    $object->redirectToList();
 } else {
-   $saved_name = Session::getSavedOption(
-      'PluginFpwebhookSubscription',
-      'name',
-      null
-   );
-   $saved_url = Session::getSavedOption(
-      'PluginFpwebhookSubscription',
-      'url',
-      null
-   );
-   $saved_event = Session::getSavedOption(
-      'PluginFpwebhookSubscription',
-      'event_type_id',
-      null
-   );
-   $saved_regex = Session::getSavedOption(
-      'PluginFpwebhookSubscription',
-      'filtering_regex',
-      null
-   );
-   $saved_category_id = Session::getSavedOption(
-      'PluginFpwebhookSubscription',
-      'filtering_category_id',
-      null
-   );
+    $saved_name = Session::getSavedOption(
+        'PluginFpwebhookSubscription',
+        'name',
+        null
+    );
+    $saved_url = Session::getSavedOption(
+        'PluginFpwebhookSubscription',
+        'url',
+        null
+    );
+    $saved_event = Session::getSavedOption(
+        'PluginFpwebhookSubscription',
+        'event_type_id',
+        null
+    );
+    $saved_regex = Session::getSavedOption(
+        'PluginFpwebhookSubscription',
+        'filtering_regex',
+        null
+    );
+    $saved_category_id = Session::getSavedOption(
+        'PluginFpwebhookSubscription',
+        'filtering_category_id',
+        null
+    );
 
-   $object->display([
-      'id' => $_GET['id'] ?? null,
-      'name' => $saved_name,
-      'url' => $saved_url,
-      'event_type_id' => $saved_event,
-      'filtering_regex' => $saved_regex,
-      'filtering_category_id' => $saved_category_id,
-   ]);
+    $object->display([
+        'id' => $_GET['id'] ?? null,
+        'name' => $saved_name,
+        'url' => $saved_url,
+        'event_type_id' => $saved_event,
+        'filtering_regex' => $saved_regex,
+        'filtering_category_id' => $saved_category_id,
+    ]);
 }
 
 Html::footer();

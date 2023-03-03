@@ -41,220 +41,237 @@
  */
 class PluginFpwebhookInstaller
 {
-   private const DISPLAY_PREFERENCES_IDS = [2, 3, 4, 5];
-   private const PROFILES_HAVING_ACCESS = ['Super-Admin', 'Admin'];
+    private const DISPLAY_PREFERENCES_IDS = [2, 3, 4, 5];
+    private const PROFILES_HAVING_ACCESS = ['Super-Admin', 'Admin'];
 
-   /**
-    * Verifies if the plugin is already installed
-    *
-    * @return bool Returns true if plugin is already installed
-    */
-   public function isInstalled(): bool
-   {
-      global $DB;
+    /**
+     * Verifies if the plugin is already installed
+     *
+     * @return bool Returns true if plugin is already installed
+     */
+    public function isInstalled(): bool
+    {
+        global $DB;
 
-      return
-         $DB->tableExists('glpi_plugin_fpwebhook_messages', false) &&
-         $DB->tableExists('glpi_plugin_fpwebhook_contents', false) &&
-         $DB->tableExists('glpi_plugin_fpwebhook_subscriptions', false) &&
-         $DB->tableExists('glpi_plugin_fpwebhook_eventtypes', false) &&
-         $DB->tableExists('glpi_plugin_fpwebhook_queue', false);
-   }
+        return
+            $DB->tableExists('glpi_plugin_fpwebhook_messages', false) &&
+            $DB->tableExists('glpi_plugin_fpwebhook_contents', false) &&
+            $DB->tableExists('glpi_plugin_fpwebhook_subscriptions', false) &&
+            $DB->tableExists('glpi_plugin_fpwebhook_eventtypes', false) &&
+            $DB->tableExists('glpi_plugin_fpwebhook_queue', false);
+    }
 
-   /**
-    * Detects a version for the purposes of the database upgrade
-    *
-    * NOTE: this is not a precise tool; is the upgrade had no schema nor configuration changes,
-    * it will not be detectable via this method. Do not rely on it for anything but the upgrade
-    * purposes.
-    *
-    * NOTE on expanding: add future version checks before the existing ones to reduce number of
-    * necessary checks
-    *
-    * @return string|null
-    */
-   public function detectSchemaVersion(): ?string
-   {
-      global $DB;
+    /**
+     * Detects a version for the purposes of the database upgrade
+     *
+     * NOTE: this is not a precise tool; is the upgrade had no schema nor configuration changes,
+     * it will not be detectable via this method. Do not rely on it for anything but the upgrade
+     * purposes.
+     *
+     * NOTE on expanding: add future version checks before the existing ones to reduce number of
+     * necessary checks
+     *
+     * @return string|null
+     */
+    public function detectSchemaVersion(): ?string
+    {
+        global $DB;
 
-      if (
-         $DB->tableExists('glpi_plugin_fpwebhook_subscriptions') &&
-         $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_regex') &&
-         $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_category_id')
-      ) {
-         return '1.1.0';
-      }
+        if (
+            $DB->tableExists('glpi_plugin_fpwebhook_subscriptions') &&
+            $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_category_id')
+        ) {
+            $filtering_category_id_type = $DB->getField(
+                'glpi_plugin_fpwebhook_subscriptions',
+                'filtering_category_id'
+            );
+            if ($filtering_category_id_type['Type'] === 'bigint(20) unsigned') {
+                return '2.0.0';
+            }
+        }
 
-      // version 1.0.1 does not change the schema
+        if (
+            $DB->tableExists('glpi_plugin_fpwebhook_subscriptions') &&
+            $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_regex') &&
+            $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_category_id')
+        ) {
+            return '1.1.0';
+        }
 
-      if ($this->isInstalled()) {
-         return '1.0.0';
-      }
+        // version 1.0.1 does not change the schema
 
-      return null;
-   }
+        if ($this->isInstalled()) {
+            return '1.0.0';
+        }
 
-   /**
-    * Initiates plugin tables
-    *
-    * @param string $version Version of database to update to
-    * @return void
-    *
-    * @throws RuntimeException in case schema installation fails
-    */
-   public function applySchema(string $version): void
-   {
-      global $DB;
+        return null;
+    }
 
-      $schemaName = PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/' . $version . '-install.sql';
+    /**
+     * Initiates plugin tables
+     *
+     * @param string $version Version of database to update to
+     * @return void
+     *
+     * @throws RuntimeException in case schema installation fails
+     */
+    public function applySchema(string $version): void
+    {
+        global $DB;
 
-      if (!$DB->runFile($schemaName)) {
-         throw new RuntimeException('Error occurred during FP Webhook setup - unable to run schema for ' . $version . '.');
-      }
-   }
+        $schemaName = PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/' . $version . '-install.sql';
 
-   /**
-    * Removes plugin tables
-    *
-    * @return void
-    *
-    * @throws RuntimeException in case schema de-installation fails
-    */
-   public function purgeSchema(): void
-   {
-      global $DB;
+        if (!$DB->runFile($schemaName)) {
+            throw new RuntimeException(
+                'Error occurred during FP Webhook setup - unable to run schema for ' . $version . '.'
+            );
+        }
+    }
 
-      if (!$DB->runFile(PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/uninstall.sql')) {
-         throw new RuntimeException('Error occurred while removing Webhook - unable to purge database');
-      }
-   }
+    /**
+     * Removes plugin tables
+     *
+     * @return void
+     *
+     * @throws RuntimeException in case schema de-installation fails
+     */
+    public function purgeSchema(): void
+    {
+        global $DB;
 
-   /**
-    * Adds base view preferences for subscription list
-    *
-    * @return void
-    */
-   public function addViews(): void
-   {
-      $rank = 1;
+        if (!$DB->runFile(PLUGIN_FPWEBHOOK_DIRECTORY . '/install/mysql/uninstall.sql')) {
+            throw new RuntimeException(
+                'Error occurred while removing Webhook - unable to purge database'
+            );
+        }
+    }
 
-      foreach (self::DISPLAY_PREFERENCES_IDS as $id) {
-         $dp = new DisplayPreference();
+    /**
+     * Adds base view preferences for subscription list
+     *
+     * @return void
+     */
+    public function addViews(): void
+    {
+        $rank = 1;
 
-         $dp->fields['itemtype'] = 'PluginFpwebhookSubscription';
-         $dp->fields['num'] = $id;
-         $dp->fields['rank'] = $rank++;
+        foreach (self::DISPLAY_PREFERENCES_IDS as $id) {
+            $dp = new DisplayPreference();
 
-         if (!$dp->addToDB()) {
-            throw new RuntimeException('Error occurred while adding access rights');
-         };
-      }
-   }
+            $dp->fields['itemtype'] = 'PluginFpwebhookSubscription';
+            $dp->fields['num'] = $id;
+            $dp->fields['rank'] = $rank++;
 
-   /**
-    * Removes base view preferences for subscription list
-    *
-    * @return void
-    * @throws GlpitestSQLError
-    */
-   public function removeViews(): void
-   {
-      global $DB;
-      $DB->query(
-         "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = 'PluginFpwebhookSubscription'"
-      );
-   }
+            if (!$dp->addToDB()) {
+                throw new RuntimeException('Error occurred while adding access rights');
+            };
+        }
+    }
 
-   /**
-    * Adds access rights to subscriptions
-    *
-    * @return void
-    */
-   public function addAccessRights(): void
-   {
-      ProfileRight::addProfileRights(['fpwebhooks']);
+    /**
+     * Removes base view preferences for subscription list
+     *
+     * @return void
+     * @throws GlpitestSQLError
+     */
+    public function removeViews(): void
+    {
+        global $DB;
+        $DB->query(
+            "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = 'PluginFpwebhookSubscription'"
+        );
+    }
 
-      $profile_ids = $this->getProfileIDsByName(self::PROFILES_HAVING_ACCESS);
+    /**
+     * Adds access rights to subscriptions
+     *
+     * @return void
+     */
+    public function addAccessRights(): void
+    {
+        ProfileRight::addProfileRights(['fpwebhooks']);
 
-      foreach ($profile_ids as $profile_id) {
-         ProfileRight::updateProfileRights($profile_id, ['fpwebhooks' => 31]);
-      }
-   }
+        $profile_ids = $this->getProfileIDsByName(self::PROFILES_HAVING_ACCESS);
 
-   /**
-    * Retrieves user profiles ID by name
-    *
-    * @param string[] $profiles Profile names
-    * @return int[] Profile IDs
-    */
-   private function getProfileIDsByName(array $profiles): array
-   {
-      global $DB;
-      $profile_objects = $DB->request([
-         'SELECT' => ['id'],
-         'FROM' => Profile::getTable(),
-         'WHERE' => ['name' => $profiles]
-      ]);
+        foreach ($profile_ids as $profile_id) {
+            ProfileRight::updateProfileRights($profile_id, ['fpwebhooks' => 31]);
+        }
+    }
 
-      $profile_ids = [];
-      while ($profile_object = $profile_objects->next()) {
-         $profile_ids[] = $profile_object['id'];
-      }
+    /**
+     * Retrieves user profiles ID by name
+     *
+     * @param string[] $profiles Profile names
+     * @return int[] Profile IDs
+     */
+    private function getProfileIDsByName(array $profiles): array
+    {
+        global $DB;
+        $profile_objects = $DB->request([
+            'SELECT' => ['id'],
+            'FROM' => Profile::getTable(),
+            'WHERE' => ['name' => $profiles]
+        ]);
 
-      return $profile_ids;
-   }
+        $profile_ids = [];
+        foreach ($profile_objects as $profile_object) {
+            $profile_ids[] = $profile_object['id'];
+        }
 
-   /**
-    * Removes access rights to subscriptions
-    *
-    * @return void
-    */
-   public function removeAccessRights(): void
-   {
-      ProfileRight::deleteProfileRights(['fpwebhooks']);
-   }
+        return $profile_ids;
+    }
 
-   /**
-    * Registers response sending with the GLPI cron
-    *
-    * @return void
-    *
-    * @throws RuntimeException in case cron task setup fails.
-    */
-   public function registerCronTasks(): void
-   {
-      $taskRegisterStatus =
-         CronTask::register(
-            'PluginFpwebhookQueue',
-            'SendResponses',
-            MINUTE_TIMESTAMP,
-            [
-               'comment' => 'Dispatch messages from webhook message queue',
-               'mode' => CronTask::MODE_EXTERNAL,
-            ]
-         ) &&
-         CronTask::register(
-            'PluginFpwebhookQueue',
-            'CleanQueue',
-            DAY_TIMESTAMP,
-            [
-               'comment' => 'Clean failed messages from webhook message queue',
-               'mode' => CronTask::MODE_EXTERNAL,
-            ]
-         );
+    /**
+     * Removes access rights to subscriptions
+     *
+     * @return void
+     */
+    public function removeAccessRights(): void
+    {
+        ProfileRight::deleteProfileRights(['fpwebhooks']);
+    }
 
-      if (!$taskRegisterStatus) {
-         throw new RuntimeException('Error occurred during FP Webhook cron task setup');
-      }
-   }
+    /**
+     * Registers response sending with the GLPI cron
+     *
+     * @return void
+     *
+     * @throws RuntimeException in case cron task setup fails.
+     */
+    public function registerCronTasks(): void
+    {
+        $taskRegisterStatus =
+            CronTask::register(
+                'PluginFpwebhookQueue',
+                'SendResponses',
+                MINUTE_TIMESTAMP,
+                [
+                    'comment' => 'Dispatch messages from webhook message queue',
+                    'mode' => CronTask::MODE_EXTERNAL,
+                ]
+            ) &&
+            CronTask::register(
+                'PluginFpwebhookQueue',
+                'CleanQueue',
+                DAY_TIMESTAMP,
+                [
+                    'comment' => 'Clean failed messages from webhook message queue',
+                    'mode' => CronTask::MODE_EXTERNAL,
+                ]
+            );
 
-   /**
-    * Unregisters automatic actions
-    *
-    * @return void
-    */
-   public function unregisterCronTasks(): void
-   {
-      CronTask::unregister('PluginFpwebhookQueue');
-   }
+        if (!$taskRegisterStatus) {
+            throw new RuntimeException('Error occurred during FP Webhook cron task setup');
+        }
+    }
+
+    /**
+     * Unregisters automatic actions
+     *
+     * @return void
+     */
+    public function unregisterCronTasks(): void
+    {
+        CronTask::unregister('PluginFpwebhookQueue');
+    }
 }

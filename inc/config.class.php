@@ -41,87 +41,91 @@
  */
 class PluginFpwebhookConfig extends CommonDBTM
 {
-   protected static $notable = true;
+    public static string $context = 'plugin:Fpwebhook';
 
-   public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
-   {
+    public static int $default_max_messages_per_tick = 10;
+    public static int $default_max_attempts_per_message = 3;
+    public static int $default_max_allowed_failures = 100;
 
-      if (!$withtemplate) {
-         if ($item->getType() == 'Config') {
-            return __('FP Webhook plugin');
-         }
-      }
-      return '';
-   }
+    protected static $notable = true;
 
-   public static function configUpdate($input)
-   {
-      $input['configuration'] = 1 - $input['configuration'];
-      return $input;
-   }
+    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
+    {
+        if (!$withtemplate) {
+            if ($item->getType() == 'Config') {
+                return __('FP Webhook plugin');
+            }
+        }
+        return '';
+    }
 
-   public function showForm()
-   {
-      if (!Session::haveRight('config', UPDATE)) {
-         return false;
-      }
+    public static function configUpdate($input)
+    {
+        $input['configuration'] = 1 - $input['configuration'];
+        return $input;
+    }
 
-      $my_config = Config::getConfigurationValues('plugin:Fpwebhook');
+    public function showFormDisplay(): bool
+    {
+        if (!Session::haveRight('config', UPDATE)) {
+            return false;
+        }
 
-      echo '<form name="form" action="'
-         . Toolbox::getItemTypeFormURL('Config')
-         . '" method="post">';
-      echo '<div class="center" id="tabsbody">';
-      echo '<table class="tab_cadre_fixe">';
+        $my_config = Config::getConfigurationValues(self::$context);
 
-      echo '<tr><th colspan="4">' . __('Queue settings') . '</th></tr>';
-      echo '<td><b>' . __('Maximum messages per one sending:') . '</b></td>';
-      echo '<td colspan="3">';
-      echo '<input type="hidden" name="config_class" value="' . __CLASS__ . '">';
-      echo '<input type="hidden" name="config_context" value="plugin:Fpwebhook">';
-      echo '<input type="text" name="max_messages_per_tick" value="'
-         . ($my_config['max_messages_per_tick'] ?? 10)
-         . '">';
-      echo '</td></tr>';
+        echo '<form name="form" action="'
+            . Toolbox::getItemTypeFormURL('Config')
+            . '" method="post">';
+        echo '<div class="center" id="tabsbody">';
+        echo '<table class="tab_cadre_fixe">';
 
-      echo '<tr><td>';
-      echo '<b>Maximum number of tries per message:</b></td><td>';
-      echo '<input type="text" name="max_attempts_per_message" value="'
-         . ($my_config['max_attempts_per_message'] ?? 3)
-         . '">';
-      echo '</td></tr>';
+        echo '<tr><th colspan="4">' . __('Queue settings') . '</th></tr>';
+        echo '<td><b>' . __('Maximum messages per one sending:') . '</b></td>';
+        echo '<td colspan="3">';
+        echo '<input type="hidden" name="config_class" value="' . __CLASS__ . '">';
+        echo '<input type="hidden" name="config_context" value="' . self::$context . '">';
+        echo '<input type="text" name="max_messages_per_tick" value="'
+            . ($my_config['max_messages_per_tick'] ?? self::$default_max_messages_per_tick)
+            . '">';
+        echo '</td></tr>';
 
-      echo '<tr><th colspan="4">' . __('Subscription settings') . '</th></tr>';
-      echo '<tr><td>';
-      echo '<b>Maximum allowed failures before unsubscription:</b></td><td>';
-      echo '<input type="text" name="max_allowed_failures" value="'
-         . ($my_config['max_allowed_failures'] ?? 100)
-         . '">';
-      echo '</td></tr>';
+        echo '<tr><td>';
+        echo '<b>Maximum number of tries per message:</b></td><td>';
+        echo '<input type="text" name="max_attempts_per_message" value="'
+            . ($my_config['max_attempts_per_message'] ?? self::$default_max_attempts_per_message)
+            . '">';
+        echo '</td></tr>';
 
-      echo '<tr class="tab_bg_2">';
-      echo '<td colspan="4" class="center">';
-      echo '<input type="submit" name="update" class="submit" value="'
-         . _sx('button', 'Save')
-         . '">';
-      echo '</td></tr>';
+        echo '<tr><th colspan="4">' . __('Subscription settings') . '</th></tr>';
+        echo '<tr><td>';
+        echo '<b>Maximum allowed failures before unsubscription:</b></td><td>';
+        echo '<input type="text" name="max_allowed_failures" value="'
+            . ($my_config['max_allowed_failures'] ?? self::$default_max_allowed_failures)
+            . '">';
+        echo '</td></tr>';
 
-      echo '</table></div>';
+        echo '<tr class="tab_bg_2">';
+        echo '<td colspan="4" class="center">';
+        echo '<input type="submit" name="update" class="submit" value="'
+            . _sx('button', 'Save')
+            . '">';
+        echo '</td></tr>';
 
-      Html::closeForm();
+        echo '</table></div>';
 
-      return true;
-   }
+        Html::closeForm();
 
-   public static function displayTabContentForItem(
-      CommonGLPI $item,
-                 $tabnum = 1,
-                 $withtemplate = 0
-   )
-   {
-      if ($item->getType() === 'Config') {
-         $config = new self();
-         $config->showForm();
-      }
-   }
+        return true;
+    }
+
+    public static function displayTabContentForItem(
+        CommonGLPI $item,
+        $tabnum = 1,
+        $withtemplate = 0
+    ) {
+        if ($item->getType() === 'Config') {
+            $config = new self();
+            $config->showFormDisplay();
+        }
+    }
 }

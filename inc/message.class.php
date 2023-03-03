@@ -41,26 +41,29 @@
  */
 class PluginFpwebhookMessage extends CommonDBChild
 {
-   static $rightname = 'fpwebhooks';
+    public static $rightname = 'fpwebhooks';
 
-   static function getTypeName($nb = 0)
-   {
-      return __('Sent message' . ($nb !== 1 ? 's' : ''));
-   }
+    public static function getTypeName($nb = 0)
+    {
+        return __('Sent message' . ($nb !== 1 ? 's' : ''));
+    }
 
-   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
-   {
-      return self::getTypeName();
-   }
+    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
+    {
+        return self::getTypeName();
+    }
 
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
-   {
-      switch ($tabnum) {
-         case 1 :
-            if ($item instanceof PluginFpwebhookSubscription) {
-               $item->showMessages();
-            }
-            break;
-      }
-   }
+    public static function displayTabContentForItem(
+        CommonGLPI $item,
+        $tabnum = 1,
+        $withtemplate = 0
+    ) {
+        switch ($tabnum) {
+            case 1:
+                if ($item instanceof PluginFpwebhookSubscription) {
+                    $item->showMessages();
+                }
+                break;
+        }
+    }
 }
