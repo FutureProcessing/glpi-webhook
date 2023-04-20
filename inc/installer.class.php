@@ -77,6 +77,8 @@ class PluginFpwebhookInstaller
     {
         global $DB;
 
+        // version 2.1.0 does not change the schema
+
         if (
             $DB->tableExists('glpi_plugin_fpwebhook_subscriptions') &&
             $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_category_id')

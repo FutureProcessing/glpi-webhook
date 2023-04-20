@@ -49,6 +49,7 @@ This is an example based on the first implemented event,`TicketCreated`.
 2. In reaction to the event, a content record is created and the request to send it is placed in the queue
 3. Every minute, a cron task sends messages in packages of 5 (configurable), starting from the "cleanest"
    (ones with the fewest failures), followed by those that failed more times
+    * If an auth token configuration variable is set, its value is sent in the message's header
 4. Every result (status and reply) are archived; successes are removed from the queue, the failures stay
 5. If any reply contains `410 Gone` status, the subscription is immediately disabled
 6. If any queue item fails 3 times (configurable), `failures` count for its subscription is increased
