@@ -57,7 +57,7 @@ class PluginFpwebhookEventType extends CommonDropdown
         $eventIterator = $DB->request(
             [
                 'FROM' => self::getTable(),
-                'WHERE' => ['name' => $name]
+                'WHERE' => ['name' => $name],
             ]
         );
 

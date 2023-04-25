@@ -38,7 +38,8 @@
 
 /**
  * Sends log message.
- * @param string $message
+ *
+ * @param  string  $message
  * @return void
  */
 function log_fpwebhook_error(string $message): void
@@ -49,9 +50,10 @@ function log_fpwebhook_error(string $message): void
 
 /**
  * Plugin install process
- * @return boolean
+ *
+ * @return bool
  */
-function plugin_fpwebhook_install()
+function plugin_fpwebhook_install(): bool
 {
     $webhook = new PluginFpwebhookInstaller();
 
@@ -88,9 +90,10 @@ function plugin_fpwebhook_install()
 
 /**
  * Plugin uninstall process
- * @return boolean
+ *
+ * @return bool
  */
-function plugin_fpwebhook_uninstall()
+function plugin_fpwebhook_uninstall(): bool
 {
     $webhook = new PluginFpwebhookInstaller();
 

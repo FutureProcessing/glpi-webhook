@@ -44,9 +44,9 @@ abstract class PluginFpwebhookEventBase
     /**
      * Trigger handler
      *
-     * @param CommonDBTM $item
+     * @param  CommonDBTM  $item
      *
-     * @return boolean
+     * @return bool
      *
      * @throws Exception
      */
@@ -93,8 +93,8 @@ abstract class PluginFpwebhookEventBase
     /**
      * Create the record with the message for future sending
      *
-     * @param int $event_type_id
-     * @param array $content
+     * @param  int  $event_type_id
+     * @param  array  $content
      *
      * @return int
      */
@@ -115,7 +115,7 @@ abstract class PluginFpwebhookEventBase
     /**
      * Get all active subscriptions
      *
-     * @param int $event_type_id
+     * @param  int  $event_type_id
      *
      * @return DBmysqlIterator
      */
@@ -140,7 +140,7 @@ abstract class PluginFpwebhookEventBase
      *
      * Override in the event if there is a simpler way to get data than a database call
      *
-     * @param CommonDBTM $item
+     * @param  CommonDBTM  $item
      *
      * @return PluginFpwebhookTicketExtracted
      *
@@ -170,7 +170,7 @@ abstract class PluginFpwebhookEventBase
     /**
      * Provides the ID of the ticket the event is linked to
      *
-     * @param CommonDBTM $item
+     * @param  CommonDBTM  $item
      *
      * @return int
      */
@@ -195,7 +195,7 @@ abstract class PluginFpwebhookEventBase
     /**
      * Prepares message array
      *
-     * @param CommonDBTM $item
+     * @param  CommonDBTM  $item
      *
      * @return array
      */
