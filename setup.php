@@ -45,7 +45,7 @@ const PLUGIN_FPWEBHOOK_DIRECTORY = __DIR__;
  *
  * @return void
  */
-function plugin_init_fpwebhook()
+function plugin_init_fpwebhook(): void
 {
     Plugin::registerClass(PluginFpwebhookConfig::class, ['addtabon' => ['Config']]);
 
@@ -81,7 +81,7 @@ function plugin_init_fpwebhook()
  *
  * @return array
  */
-function plugin_version_fpwebhook()
+function plugin_version_fpwebhook(): array
 {
     return [
         'name' => 'FP Webhook',
@@ -93,8 +93,8 @@ function plugin_version_fpwebhook()
             'glpi' => [
                 'min' => '9.5',
                 'max' => '10.1',
-            ]
-        ]
+            ],
+        ],
     ];
 }
 
@@ -102,7 +102,7 @@ function plugin_version_fpwebhook()
  * Check pre-requisites before install
  * OPTIONAL, but recommended
  *
- * @return boolean
+ * @return bool
  */
 function plugin_webhook_check_prerequisites(): bool
 {
@@ -112,7 +112,7 @@ function plugin_webhook_check_prerequisites(): bool
 /**
  * Check configuration
  *
- * @param bool $verbose Whether to display message on failure. Defaults to false
+ * @param  bool  $verbose  Whether to display message on failure. Defaults to false
  *
  * @return bool
  */

@@ -52,7 +52,7 @@ class PluginFpwebhookQueue extends CommonDBTM
         205,
         302,
         303,
-        307
+        307,
     ]; // includes temporary redirects
     private const REDIRECTING_RESPONSES = [301, 308]; // contains permanent redirects
     private const KILLING_RESPONSES = [410]; // Unsubscribe immediately
@@ -89,8 +89,8 @@ class PluginFpwebhookQueue extends CommonDBTM
     /**
      * Adds message to queue
      *
-     * @param int $subscription_id
-     * @param int $content_id
+     * @param  int  $subscription_id
+     * @param  int  $content_id
      *
      * @return bool
      */
@@ -200,14 +200,22 @@ class PluginFpwebhookQueue extends CommonDBTM
      */
     private static function dispatchMessage($message): array
     {
+        $my_config = Config::getConfigurationValues('plugin:Fpwebhook');
+
+        $headers = [
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($message['content']),
+        ];
+
+        if (!empty($my_config['message_auth_token'])) {
+            $headers[] = 'Authorization: Bearer ' . $my_config['message_auth_token'];
+        }
+
         $curl = curl_init($message['url']);
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $message['content']);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($message['content']),
-        ]);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($curl);
 
@@ -224,7 +232,7 @@ class PluginFpwebhookQueue extends CommonDBTM
     /**
      * Remove message from queue
      *
-     * @param int $message_id
+     * @param  int  $message_id
      *
      * @return bool
      */
@@ -258,7 +266,7 @@ class PluginFpwebhookQueue extends CommonDBTM
                         'is_active',
                         'is_deleted',
                         'unsubscribed_at',
-                        'url'
+                        'url',
                     ],
                     'glpi_plugin_fpwebhook_contents' => ['content'],
                 ],
@@ -275,14 +283,14 @@ class PluginFpwebhookQueue extends CommonDBTM
                     'glpi_plugin_fpwebhook_subscriptions' => [
                         'ON' => [
                             'glpi_plugin_fpwebhook_subscriptions' => 'id',
-                            'glpi_plugin_fpwebhook_queue' => 'subscription_id'
-                        ]
+                            'glpi_plugin_fpwebhook_queue' => 'subscription_id',
+                        ],
                     ],
                     'glpi_plugin_fpwebhook_contents' => [
                         'ON' => [
                             'glpi_plugin_fpwebhook_contents' => 'id',
-                            'glpi_plugin_fpwebhook_queue' => 'content_id'
-                        ]
+                            'glpi_plugin_fpwebhook_queue' => 'content_id',
+                        ],
                     ],
                 ],
                 'ORDER' => 'attempts', // first, the new, then the retries
@@ -312,7 +320,7 @@ class PluginFpwebhookQueue extends CommonDBTM
                     'glpi_plugin_fpwebhook_subscriptions' => [
                         'is_active',
                         'is_deleted',
-                        'unsubscribed_at'
+                        'unsubscribed_at',
                     ],
                 ],
                 'FROM' => 'glpi_plugin_fpwebhook_queue',
@@ -324,14 +332,14 @@ class PluginFpwebhookQueue extends CommonDBTM
                         ), // too many attempts
                         'is_active = 0',
                         'is_deleted = 1',
-                    ]
+                    ],
                 ],
                 'INNER JOIN' => [
                     'glpi_plugin_fpwebhook_subscriptions' => [
                         'ON' => [
                             'glpi_plugin_fpwebhook_subscriptions' => 'id',
-                            'glpi_plugin_fpwebhook_queue' => 'subscription_id'
-                        ]
+                            'glpi_plugin_fpwebhook_queue' => 'subscription_id',
+                        ],
                     ],
                 ],
             ]
@@ -341,9 +349,9 @@ class PluginFpwebhookQueue extends CommonDBTM
     /**
      * Updates attempts and last response or deletes if the attempts were too many already
      *
-     * @param array $message
-     * @param int $status
-     * @param string|null $content
+     * @param  array  $message
+     * @param  int  $status
+     * @param  string|null  $content
      *
      * @return bool
      */
@@ -365,9 +373,9 @@ class PluginFpwebhookQueue extends CommonDBTM
     /**
      * Creates an archive record
      *
-     * @param array $message
-     * @param int $status
-     * @param string|null $response_content
+     * @param  array  $message
+     * @param  int  $status
+     * @param  string|null  $response_content
      *
      * @return bool
      */

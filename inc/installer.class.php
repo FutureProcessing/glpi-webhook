@@ -77,6 +77,8 @@ class PluginFpwebhookInstaller
     {
         global $DB;
 
+        // version 2.1.0 does not change the schema
+
         if (
             $DB->tableExists('glpi_plugin_fpwebhook_subscriptions') &&
             $DB->fieldExists('glpi_plugin_fpwebhook_subscriptions', 'filtering_category_id')
@@ -110,7 +112,7 @@ class PluginFpwebhookInstaller
     /**
      * Initiates plugin tables
      *
-     * @param string $version Version of database to update to
+     * @param  string  $version  Version of database to update to
      * @return void
      *
      * @throws RuntimeException in case schema installation fails
@@ -201,7 +203,7 @@ class PluginFpwebhookInstaller
     /**
      * Retrieves user profiles ID by name
      *
-     * @param string[] $profiles Profile names
+     * @param  string[]  $profiles  Profile names
      * @return int[] Profile IDs
      */
     private function getProfileIDsByName(array $profiles): array
@@ -210,7 +212,7 @@ class PluginFpwebhookInstaller
         $profile_objects = $DB->request([
             'SELECT' => ['id'],
             'FROM' => Profile::getTable(),
-            'WHERE' => ['name' => $profiles]
+            'WHERE' => ['name' => $profiles],
         ]);
 
         $profile_ids = [];

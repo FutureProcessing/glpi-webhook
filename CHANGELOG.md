@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0] - UNRELEASED
+
+Message authentication added
+
+### Added
+
+* An authorization token that would be sent with every `Authorization` header can now be set in plugin configuration
+
+### Changed
+
+* Visual upgrade of the plugin's config screen
+
 ## [2.0.0] - 2023-03-10
 
 Ensured compatibility with GLPI 10.0.x

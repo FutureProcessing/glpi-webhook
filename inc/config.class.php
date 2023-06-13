@@ -46,6 +46,7 @@ class PluginFpwebhookConfig extends CommonDBTM
     public static int $default_max_messages_per_tick = 10;
     public static int $default_max_attempts_per_message = 3;
     public static int $default_max_allowed_failures = 100;
+    public static ?string $message_auth_token = null;
 
     protected static $notable = true;
 
@@ -77,7 +78,7 @@ class PluginFpwebhookConfig extends CommonDBTM
             . Toolbox::getItemTypeFormURL('Config')
             . '" method="post">';
         echo '<div class="center" id="tabsbody">';
-        echo '<table class="tab_cadre_fixe">';
+        echo '<table class="tab_cadre_fixe" style="max-width: 768px">';
 
         echo '<tr><th colspan="4">' . __('Queue settings') . '</th></tr>';
         echo '<td><b>' . __('Maximum messages per one sending:') . '</b></td>';
@@ -86,14 +87,14 @@ class PluginFpwebhookConfig extends CommonDBTM
         echo '<input type="hidden" name="config_context" value="' . self::$context . '">';
         echo '<input type="text" name="max_messages_per_tick" value="'
             . ($my_config['max_messages_per_tick'] ?? self::$default_max_messages_per_tick)
-            . '">';
+            . '" style="width: 25%; float: right; text-align: right;">';
         echo '</td></tr>';
 
         echo '<tr><td>';
         echo '<b>Maximum number of tries per message:</b></td><td>';
         echo '<input type="text" name="max_attempts_per_message" value="'
             . ($my_config['max_attempts_per_message'] ?? self::$default_max_attempts_per_message)
-            . '">';
+            . '" style="width: 25%; float: right; text-align: right;">';
         echo '</td></tr>';
 
         echo '<tr><th colspan="4">' . __('Subscription settings') . '</th></tr>';
@@ -101,7 +102,15 @@ class PluginFpwebhookConfig extends CommonDBTM
         echo '<b>Maximum allowed failures before unsubscription:</b></td><td>';
         echo '<input type="text" name="max_allowed_failures" value="'
             . ($my_config['max_allowed_failures'] ?? self::$default_max_allowed_failures)
-            . '">';
+            . '" style="width: 25%; float: right; text-align: right;">';
+        echo '</td></tr>';
+
+        echo '<tr><th colspan="4">' . __('Security settings') . '</th></tr>';
+        echo '<tr><td>';
+        echo '<b>Message authorization token:</b></td><td>';
+        echo '<input type="text" name="message_auth_token" value="'
+            . ($my_config['message_auth_token'] ?? self::$message_auth_token)
+            . '" style="width: 100%; float: right; text-align: right;">';
         echo '</td></tr>';
 
         echo '<tr class="tab_bg_2">';

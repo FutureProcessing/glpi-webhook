@@ -13,8 +13,8 @@ final class PluginFpwebhookTicketExtracted
     private ?int $category_id;
 
     /**
-     * @param string $title
-     * @param int|null $category_id
+     * @param  string  $title
+     * @param  int|null  $category_id
      */
     public function __construct(string $title, ?int $category_id)
     {

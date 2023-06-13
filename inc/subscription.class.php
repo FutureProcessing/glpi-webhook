@@ -71,7 +71,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
 
         $tab[] = [
             'id' => 'common',
-            'name' => __('Characteristics')
+            'name' => __('Characteristics'),
         ];
 
         $tab[] = [
@@ -186,7 +186,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
             [
                 'checked' => $is_new_record || $this->isActive(),
                 'value' => $is_new_record || $this->isActive(),
-                'name' => 'is_active'
+                'name' => 'is_active',
             ]
         );
         echo '</td>';
@@ -289,8 +289,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Deactivates webhook
      *
-     * @param int $subscription_id ID of the webhook to deactivate
-     * @param string|null $reason Reason for deactivation
+     * @param  int  $subscription_id  ID of the webhook to deactivate
+     * @param  string|null  $reason  Reason for deactivation
      *
      * @return bool
      */
@@ -302,7 +302,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Adds to failure count on the webhook
      *
-     * @param int $subscription_id
+     * @param  int  $subscription_id
      *
      * @return bool
      */
@@ -319,7 +319,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Resets failures upon success
      *
-     * @param int $subscription_id
+     * @param  int  $subscription_id
      *
      * @return bool
      */
@@ -353,7 +353,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Fixes the 'on'/'0' behavior of form checkbox with some safety margin
      *
-     * @param string $checkboxInput
+     * @param  string  $checkboxInput
      *
      * @return bool|null
      */
@@ -455,19 +455,19 @@ class PluginFpwebhookSubscription extends CommonDBTM
                 'glpi_plugin_fpwebhook_contents' => [
                     'ON' => [
                         'glpi_plugin_fpwebhook_contents' => 'id',
-                        PluginFpwebhookMessage::getTable() => 'content_id'
-                    ]
+                        PluginFpwebhookMessage::getTable() => 'content_id',
+                    ],
                 ],
                 'glpi_plugin_fpwebhook_eventtypes' => [
                     'ON' => [
                         'glpi_plugin_fpwebhook_eventtypes' => 'id',
-                        'glpi_plugin_fpwebhook_contents' => 'event_type_id'
-                    ]
+                        'glpi_plugin_fpwebhook_contents' => 'event_type_id',
+                    ],
                 ],
             ],
             'ORDER' => PluginFpwebhookMessage::getTable() . '.id DESC',
             'START' => (int)$start,
-            'LIMIT' => (int)$_SESSION['glpilist_limit']
+            'LIMIT' => (int)$_SESSION['glpilist_limit'],
         ]);
 
         if (count($iterator)) {
@@ -551,19 +551,19 @@ class PluginFpwebhookSubscription extends CommonDBTM
                 'glpi_plugin_fpwebhook_contents' => [
                     'ON' => [
                         'glpi_plugin_fpwebhook_contents' => 'id',
-                        PluginFpwebhookQueue::getTable() => 'content_id'
-                    ]
+                        PluginFpwebhookQueue::getTable() => 'content_id',
+                    ],
                 ],
                 'glpi_plugin_fpwebhook_eventtypes' => [
                     'ON' => [
                         'glpi_plugin_fpwebhook_eventtypes' => 'id',
-                        'glpi_plugin_fpwebhook_contents' => 'event_type_id'
-                    ]
+                        'glpi_plugin_fpwebhook_contents' => 'event_type_id',
+                    ],
                 ],
             ],
             'ORDER' => PluginFpwebhookQueue::getTable() . '.id DESC',
             'START' => (int)$start,
-            'LIMIT' => (int)$_SESSION['glpilist_limit']
+            'LIMIT' => (int)$_SESSION['glpilist_limit'],
         ]);
 
         if (count($iterator)) {
@@ -605,8 +605,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
     }
 
     /**
-     * @param int $content_id ID of the content to display
-     * @param string $return_link_name Name of the list of origin to display in the return link
+     * @param  int  $content_id  ID of the content to display
+     * @param  string  $return_link_name  Name of the list of origin to display in the return link
      */
     private function showContentDetails(int $content_id, string $return_link_name): void
     {
@@ -649,7 +649,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
     }
 
     /**
-     * @param int $message_id ID of the message to display
+     * @param  int  $message_id  ID of the message to display
      */
     private function showMessageDetails(int $message_id): void
     {
@@ -702,8 +702,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Check whether the ticket passes filter set by subscription
      *
-     * @param array $subscription
-     * @param PluginFpwebhookTicketExtracted $ticket_data
+     * @param  array  $subscription
+     * @param  PluginFpwebhookTicketExtracted  $ticket_data
      *
      * @return bool
      */
@@ -730,8 +730,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Converts size in bytes to a more concise form as needed
      *
-     * @param int $bytes
-     * @param int $precision
+     * @param  int  $bytes
+     * @param  int  $precision
      *
      * @return string
      */
@@ -791,8 +791,8 @@ class PluginFpwebhookSubscription extends CommonDBTM
     /**
      * Unsubscribes on given conditions and with the given reason
      *
-     * @param array $condition
-     * @param string|null $reason
+     * @param  array  $condition
+     * @param  string|null  $reason
      * @return bool
      */
     private static function unsubscribe(array $condition, ?string $reason = null): bool
@@ -804,7 +804,7 @@ class PluginFpwebhookSubscription extends CommonDBTM
             [
                 'is_active' => false,
                 'unsubscribed_at' => $_SESSION['glpi_currenttime'],
-                'unsubscribed_because' => $reason
+                'unsubscribed_because' => $reason,
             ],
             array_merge(
                 ['is_active' => 1],
