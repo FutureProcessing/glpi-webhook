@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.1.0] - UNRELEASED
+## [2.1.0] - 2023-06-14
 
 Message authentication added
 
